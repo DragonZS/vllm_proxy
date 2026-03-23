@@ -130,6 +130,8 @@ models:
       # 限制每个 prompt 最多 1 张图（与 max_pixels 限制匹配）
       - "--limit-mm-per-prompt"
       - '{"image": 1}'
+      # 禁用视觉编码器加载
+      #- "--language-model-only"
 
   #--------------------------------------------------------------------------
   # Qwen3.5-9B-AWQ-4BIT（CYANKIWI 量化版本，compressed-tensors 格式）
@@ -148,6 +150,7 @@ models:
     num_attention_heads: 16
     num_kv_heads: 4
     explicit_memory_mb: 7000
+    gpu_memory_utilization: 0.86 
     extra_args:
       - "--trust-remote-code"
       # 启用工具调用支持
@@ -181,6 +184,7 @@ models:
     max_num_seqs: 16
     enforce_eager: true  # T4 GPU SM 不足，torch.compile 负优化
     explicit_memory_mb: 10000  # max_model_len 增大后需提高预估显存
+    gpu_memory_utilization: 0.86 
     extra_args:
       - "--trust-remote-code"
       # 启用工具调用支持
@@ -248,6 +252,9 @@ models:
     extra_args:
       - "--trust-remote-code"
       - "--enable-prefix-caching"
+      - "--kv-offloading-size"
+      - "4"
+      - "--disable-hybrid-kv-cache-manager"
 
   #--------------------------------------------------------------------------
   # Qwen2.5-7B-AWQ
