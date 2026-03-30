@@ -229,32 +229,34 @@ class ModelManager:
         Returns:
             模型实例，如果模型配置不存在则返回 None
         """
+        # 全局锁：防止不同模型并发加载导致 GPU OOM
         # 确保有锁，防止同一模型的并发操作
         if model_id not in self._locks:
             self._locks[model_id] = asyncio.Lock()
 
-        async with self._locks[model_id]:
-            # 检查是否已存在
-            if model_id in self.models:
-                model = self.models[model_id]
+        async with self._global_lock:
+            async with self._locks[model_id]:
+                # 检查是否已存在
+                if model_id in self.models:
+                    model = self.models[model_id]
 
-                if model.status == ModelStatus.RUNNING:
-                    # 模型已运行，更新访问时间并返回
-                    self._touch_model(model_id)
-                    return model
+                    if model.status == ModelStatus.RUNNING:
+                        # 模型已运行，更新访问时间并返回
+                        self._touch_model(model_id)
+                        return model
 
-                elif model.status == ModelStatus.STARTING:
-                    # 模型正在启动，等待启动完成
-                    logger.info(f"Model {model_id} is starting, waiting...")
-                    return await self._wait_for_model_ready(model_id)
+                    elif model.status == ModelStatus.STARTING:
+                        # 模型正在启动，等待启动完成
+                        logger.info(f"Model {model_id} is starting, waiting...")
+                        return await self._wait_for_model_ready(model_id)
 
-                elif model.status == ModelStatus.ERROR:
-                    # 之前启动失败，尝试重新加载
-                    logger.warning(f"Model {model_id} was in error state, retrying...")
-                    return await self._create_model(model_id)
+                    elif model.status == ModelStatus.ERROR:
+                        # 之前启动失败，尝试重新加载
+                        logger.warning(f"Model {model_id} was in error state, retrying...")
+                        return await self._create_model(model_id)
 
-            # 创建新实例
-            return await self._create_model(model_id)
+                # 创建新实例
+                return await self._create_model(model_id)
 
     async def _create_model(self, model_id: str) -> Optional[ModelInstance]:
         """创建新模型实例

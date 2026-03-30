@@ -226,6 +226,7 @@ models:
     num_attention_heads: 16
     num_kv_heads: 8
     explicit_memory_mb: 4000
+    gpu_memory_utilization: 0.86 
     extra_args:
       - "--trust-remote-code"
       - "--enable-prefix-caching"
