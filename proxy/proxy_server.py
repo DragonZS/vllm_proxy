@@ -384,7 +384,10 @@ async def _proxy_request(
                 target_url,
                 json=body,
                 headers={"Content-Type": "application/json"},
-                timeout=aiohttp.ClientTimeout(total=300)
+                timeout=aiohttp.ClientTimeout(
+                    total=None,
+                    sock_read=config.proxy.request_timeout_seconds
+                )
             ) as resp:
                 result = await resp.json()
 
@@ -430,7 +433,10 @@ async def _stream_proxy(
                 target_url,
                 json=body,
                 headers={"Content-Type": "application/json"},
-                timeout=aiohttp.ClientTimeout(total=300)
+                timeout=aiohttp.ClientTimeout(
+                    total=None,
+                    sock_read=config.proxy.request_timeout_seconds
+                )
             ) as resp:
 
                 if resp.status != 200:

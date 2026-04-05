@@ -132,6 +132,8 @@ class ProxyConfig:
     max_start_retries: int = 3
     start_timeout_seconds: int = 120
     stop_timeout_seconds: int = 30
+    # 代理请求超时时间（秒），使用 sock_read 超时（每次收到数据时重置）
+    request_timeout_seconds: int = 300
     # API Key 认证配置（与 vLLM/OpenAI 兼容格式）
     # 如果设置，请求需要在 Header 中提供: Authorization: Bearer <api_key>
     api_key: Optional[str] = None
@@ -260,6 +262,8 @@ class Config:
             config.proxy.base_port = int(os.getenv('BASE_PORT'))
         if os.getenv('IDLE_TIMEOUT'):
             config.proxy.idle_timeout_seconds = int(os.getenv('IDLE_TIMEOUT'))
+        if os.getenv('REQUEST_TIMEOUT'):
+            config.proxy.request_timeout_seconds = int(os.getenv('REQUEST_TIMEOUT'))
 
         # 日志配置
         if os.getenv('LOG_LEVEL'):
@@ -301,6 +305,8 @@ class Config:
             self.proxy.start_timeout_seconds = other.proxy.start_timeout_seconds
         if other.proxy.stop_timeout_seconds != 30:
             self.proxy.stop_timeout_seconds = other.proxy.stop_timeout_seconds
+        if other.proxy.request_timeout_seconds != 300:
+            self.proxy.request_timeout_seconds = other.proxy.request_timeout_seconds
         if other.proxy.max_start_retries != 3:
             self.proxy.max_start_retries = other.proxy.max_start_retries
         if other.proxy.health_check_interval != 10:
